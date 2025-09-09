@@ -6,30 +6,30 @@ import Link from "next/link";
 const menu = [
   {
     id: 1,
-    name: "Home",
+    name: "홈",
     path: "/",
   },
   {
     id: 2,
-    name: "Products",
+    name: "상품",
     path: "/products",
   },
 
   {
     id: 3,
-    name: "AboutUs",
+    name: "회사소개",
     path: "/",
   },
   {
     id: 4,
-    name: "ContactUs",
+    name: "문의하기",
     path: "/",
   },
 ];
 
 const Header = () => {
   return (
-    <div className="flex items-center justify-between p-4 px-10">
+    <div className="flex items-center justify-between p-4">
       <Image src="/logo.svg" alt="logo" width={180} height={180} />
       <ul className="flex gap-5">
         {menu.map((item) => (

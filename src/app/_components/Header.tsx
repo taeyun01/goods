@@ -1,7 +1,13 @@
+"use client";
+
+import { UserDetailContext } from "@/app/context/UserDetailContext";
 import { Button } from "@/components/ui/button";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useContext, useEffect, useState } from "react";
 
 const menu = [
   {
@@ -27,7 +33,57 @@ const menu = [
   },
 ];
 
+export type User = {
+  email: string;
+  name: string;
+  picture: string;
+};
+
 const Header = () => {
+  const [user, setUser] = useState<User | undefined>(undefined);
+  const { userDetail, setUserDetail } = useContext(UserDetailContext);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log("tokenResponse :", tokenResponse); // 토큰 응답
+      localStorage.setItem("tokenResponse", JSON.stringify(tokenResponse));
+      getUserProfile(tokenResponse.access_token);
+
+      // TODO: 유저 정보 DB저장 (Strapi Backend)
+    },
+    onError: (errorResponse) => console.log(errorResponse),
+  });
+
+  // Get User Info (유저 정보 가져오기)
+  const getUserProfile = async (access_token: string) => {
+    try {
+      const userInfo = await axios.get(
+        // 구글 유저 정보 요청
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        { headers: { Authorization: `Bearer ${access_token}` } }
+      );
+      console.log("userInfo :", userInfo); // 유저 정보
+
+      setUser(userInfo?.data);
+      setUserDetail(userInfo?.data);
+    } catch (error) {
+      console.log("error :", error);
+      localStorage.setItem("tokenResponse", "");
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const tokenResponse = JSON.parse(
+        localStorage.getItem("tokenResponse") || "{}"
+      );
+
+      if (tokenResponse) {
+        getUserProfile(tokenResponse.access_token);
+      }
+    }
+  }, []);
+
   return (
     <div className="flex items-center justify-between p-4">
       <Image src="/logo.svg" alt="logo" width={180} height={180} />
@@ -40,7 +96,18 @@ const Header = () => {
       </ul>
       <div className="flex gap-3 items-center">
         <ShoppingCart />
-        <Button>로그인</Button>
+
+        {!user ? (
+          <Button onClick={() => googleLogin()}>로그인</Button>
+        ) : (
+          <Image
+            className="rounded-full"
+            src={user.picture}
+            alt={user.name}
+            width={40}
+            height={40}
+          />
+        )}
       </div>
     </div>
   );

@@ -66,10 +66,22 @@ const Header = () => {
 
       setUser(userInfo?.data);
       setUserDetail(userInfo?.data);
+      saveNewUser(userInfo?.data);
     } catch (error) {
       console.log("error :", error);
       localStorage.setItem("tokenResponse", "");
     }
+  };
+
+  const saveNewUser = async (user: User) => {
+    const { name, email, picture } = user;
+
+    const result = await axios.post("/api/users", {
+      name,
+      email,
+      picture,
+    });
+    console.log("유저 로그인 후 저장 result : ", result.data);
   };
 
   useEffect(() => {
@@ -100,13 +112,15 @@ const Header = () => {
         {!user ? (
           <Button onClick={() => googleLogin()}>로그인</Button>
         ) : (
-          <Image
-            className="rounded-full"
-            src={user.picture}
-            alt={user.name}
-            width={40}
-            height={40}
-          />
+          <>
+            <Image
+              className="rounded-full"
+              src={user.picture}
+              alt={user.name}
+              width={40}
+              height={40}
+            />
+          </>
         )}
       </div>
     </div>
